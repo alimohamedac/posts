@@ -20,13 +20,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::prefix('v1/auth')->group(function () {
+    Route::post('register', [RegisterController::class, 'register']);
+    Route::post('login', [LoginController::class, 'login']);
+    Route::post('verify', [VerificationController::class, 'verify']);
 });
 
+// routes (requires authentication)
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('tags', TagController::class);
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 
+    Route::apiResource('tags', TagController::class);
     Route::apiResource('posts', PostController::class);
 
     Route::get('posts/trashed', [PostController::class, 'trashed']);
@@ -35,28 +41,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('stats', [StatsController::class, 'index']);
 });
 
-
-Route::post('v1/auth/register', [RegisterController::class, 'register']);
-Route::post('v1/auth/login', [LoginController::class, 'login']);
-Route::post('v1/auth/verify', [VerificationController::class, 'verify']);
-/*
-Route::group([
-    'prefix' => 'v1',
-], function () {
-    Route::group([
-        'prefix' => 'auth',
-    ], function () {
-        Route::post('register', [
-            'as'   => 'api.register',
-            'uses' => 'Auth\RegisterController@register',
-        ]);
-        Route::post('login', [
-            'as'   => 'api.login',
-            'uses' => 'Auth\LoginController@login',
-        ]);
-        Route::post('verify', [
-            'as'   => 'api.verify',
-            'uses' => 'Auth\VerificationController@verify',
-        ]);
-    });
-});*/
