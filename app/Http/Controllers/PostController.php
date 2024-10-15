@@ -16,7 +16,13 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = auth()->user()->posts()->with('tags')
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+
+        $posts = $user->posts()->with('tags')
             ->orderByDesc('pinned')
             ->get();
 

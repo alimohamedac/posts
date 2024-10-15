@@ -21,7 +21,6 @@ class VerificationController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        // Check if the code matches
         if ($user->verification_code === $request->verification_code) {
             $user->is_verified = true;
             $user->verification_code = null; // Clear the code after verification
