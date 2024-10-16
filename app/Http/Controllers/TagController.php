@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Transformers\TagTransformer;
 
 class TagController extends Controller
 {
@@ -17,7 +18,7 @@ class TagController extends Controller
     {
         $tags = Tag::all();
 
-        return response()->json($tags);
+        return responder()->success($tags, new TagTransformer())->respond(200);
     }
 
     /**

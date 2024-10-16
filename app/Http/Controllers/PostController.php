@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Transformers\PostTransformer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +27,7 @@ class PostController extends Controller
             ->orderByDesc('pinned')
             ->get();
 
-        return response()->json($posts);
+        return responder()->success($posts, new PostTransformer())->respond(200);
     }
 
     /**
