@@ -32,6 +32,7 @@ class LogRandomData implements ShouldQueue
     public function handle()
     {
         $response = Http::get('https://randomuser.me/api/');
+        
         Log::info($response->json('results')[0]);
     }
 }
