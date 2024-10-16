@@ -13,4 +13,6 @@ return [
     'tag_not_found'   => 'Tag not found.',
     'error_occurred'  => 'An error occurred. Please try again.',
     'user_not_verified' => 'Invalid verification code.',
+    'post_restored'     => 'Post restored successfully.',
+
 ];

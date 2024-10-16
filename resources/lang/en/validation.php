@@ -158,6 +158,12 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'title' => 'Title',
+        'body'  => 'Body',
+        'cover image' => 'Cover Image',
+        'pinned' => 'Pinned',
+        'tags' => 'Tags',
+    ],
 
 ];

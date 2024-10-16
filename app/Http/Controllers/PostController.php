@@ -3,83 +3,45 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Repositories\PostRepository;
 use App\Transformers\PostTransformer;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\StorePostRequest;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
+    protected $postRepository;
+
+    public function __construct(PostRepository $postRepository)
+    {
+        $this->postRepository = $postRepository;
+    }
+
     public function index()
     {
-        $user = auth()->user();
-
-        if (!$user) {
-            return response()->json(['error' => 'User not authenticated'], 401);
-        }
-
-        $posts = $user->posts()->with('tags')
-            ->orderByDesc('pinned')
-            ->get();
+        $posts = $this->postRepository->all();
 
         return responder()->success($posts, new PostTransformer())->respond(200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function store(StorePostRequest $request)
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'title'       => 'required|string|max:255',
-            'body'        => 'required|string',
-            'cover_image' => 'required|image',
-            'pinned'      => 'required|boolean',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        }
-
         $imagePath = $request->file('cover_image')->store('images', 'public');
 
-        $post = auth()->user()->posts()->create([
+        $post = $this->postRepository->create([
             'title'       => $request->title,
             'body'        => $request->body,
             'cover_image' => $imagePath,
             'pinned'      => $request->pinned,
         ]);
 
-        $post->tags()->attach($request->tags);
+        if ($request->tags) {
+            $post->tags()->attach($request->tags);
+        }
 
         return response()->json($post, 201);
     }
 
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Post  $post
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function show(Post $post)
     {
         if ($post->user_id !== auth()->id()) {
@@ -89,40 +51,10 @@ class PostController extends Controller
         return response()->json($post->load('tags'));
     }
 
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Post  $post
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Post $post)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Post  $post
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function update(Request $request, Post $post)
+    public function update(StorePostRequest $request, Post $post)
     {
         if ($post->user_id !== auth()->id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'title'       => 'required|string|max:255',
-            'body'        => 'required|string',
-            'cover_image' => 'sometimes|image',
-            'pinned'      => 'required|boolean',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
         }
 
         if ($request->hasFile('cover_image')) {
@@ -131,44 +63,34 @@ class PostController extends Controller
             $post->cover_image = $imagePath;
         }
 
-        $post->update($request->only('title', 'body', 'pinned'));
-
+        $post = $this->postRepository->update($post, $request->only('title', 'body', 'pinned'));
         $post->tags()->sync($request->tags);
 
         return response()->json($post);
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Post  $post
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function destroy(Post $post)
     {
         if ($post->user_id !== auth()->id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $post->delete();
+        $this->postRepository->delete($post);
 
-        return response()->json(['message' => 'Post soft-deleted successfully']);
+        return response()->json(['message' => trans('messages.post_deleted')]);
     }
 
     public function trashed()
     {
-        $posts = auth()->user()->posts()->onlyTrashed()->get();
+        $posts = $this->postRepository->trashed();
 
         return response()->json($posts);
     }
 
     public function restore($id)
     {
-        $post = auth()->user()->posts()->onlyTrashed()->findOrFail($id);
-        $post->restore();
+        $post = $this->postRepository->restore($id);
 
-        return response()->json(['message' => 'Post restored successfully']);
+        return response()->json(['message' => trans('messages.post_restored')]);
     }
-
 }
