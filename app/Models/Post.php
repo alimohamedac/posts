@@ -16,7 +16,7 @@ class Post extends Model
         'title',
         'body',
         'cover_image',
-        //'pinned',
+        'pinned',
     ];
 
     protected static function boot()

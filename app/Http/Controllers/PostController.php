@@ -48,11 +48,11 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'body' => 'required|string',
+            'title'       => 'required|string|max:255',
+            'body'        => 'required|string',
             'cover_image' => 'required|image',
-            'pinned' => 'required|boolean',
             'tags' => 'required|array',
+            'pinned'      => 'required|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -62,10 +62,10 @@ class PostController extends Controller
         $imagePath = $request->file('cover_image')->store('images', 'public');
 
         $post = auth()->user()->posts()->create([
-            'title' => $request->title,
-            'body' => $request->body,
+            'title'       => $request->title,
+            'body'        => $request->body,
             'cover_image' => $imagePath,
-            'pinned' => $request->pinned,
+            'pinned'      => $request->pinned,
         ]);
 
         $post->tags()->attach($request->tags);
@@ -115,11 +115,11 @@ class PostController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'body' => 'required|string',
+            'title'       => 'required|string|max:255',
+            'body'        => 'required|string',
             'cover_image' => 'sometimes|image',
-            'pinned' => 'required|boolean',
             'tags' => 'required|array',
+            'pinned'      => 'required|boolean',
         ]);
 
         if ($validator->fails()) {

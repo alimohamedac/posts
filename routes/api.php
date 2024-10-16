@@ -6,7 +6,6 @@ use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\TagController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,10 +27,6 @@ Route::prefix('v1/auth')->group(function () {
 
 // routes (requires authentication)
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-
     Route::apiResource('tags', TagController::class);
     Route::apiResource('posts', PostController::class);
 
