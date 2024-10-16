@@ -3,22 +3,17 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\VerifyRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 
 class VerificationController extends Controller
 {
-    public function verify(Request $request)
+    public function verify(VerifyRequest $request)
     {
-        $request->validate([
-            'phone_number' => 'required|string',
-            'verification_code' => 'required|string|size:6',
-        ]);
-
         $user = User::where('phone_number', $request->phone_number)->first();
 
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json(['message' => trans('messages.user_not_found')], 404);
         }
 
         if ($user->verification_code === $request->verification_code) {
@@ -26,9 +21,9 @@ class VerificationController extends Controller
             $user->verification_code = null; // Clear the code after verification
             $user->save();
 
-            return response()->json(['message' => 'Account verified successfully.'], 200);
+            return response()->json(['message' => trans('messages.user_verified')], 200);
         } else {
-            return response()->json(['message' => 'Invalid verification code.'], 400);
+            return response()->json(['message' => trans('messages.user_not_verified')], 400);
         }
     }
 }
