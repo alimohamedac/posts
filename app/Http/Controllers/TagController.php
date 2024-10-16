@@ -2,112 +2,69 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tag;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\StoreTagRequest;
+use App\Http\Requests\UpdateTagRequest;
+use App\Repositories\TagRepository;
 use App\Transformers\TagTransformer;
 
 class TagController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
+    protected $tagRepository;
+
+    public function __construct(TagRepository $tagRepository)
+    {
+        $this->tagRepository = $tagRepository;
+    }
+
     public function index()
     {
-        $tags = Tag::all();
+        $tags = $this->tagRepository->getAll();
 
         return responder()->success($tags, new TagTransformer())->respond(200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function store(StoreTagRequest $request)
     {
-        //
+        $tag = $this->tagRepository->create($request->validated());
+
+        return response()->json([
+            'tag'     => $tag,
+            'message' => trans('messages.tag_created')
+        ], 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(Request $request)
+    public function show($id)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|unique:tags,name',
-        ]);
+        $tag = $this->tagRepository->find($id);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
+        if (!$tag) {
+            return response()->json([
+                trans('messages.tag_not_found')
+            ], 404);
         }
-
-        $tag = Tag::create(['name' => $request->name]);
-
-        return response()->json($tag, 201);
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Tag $tag)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Tag $tag)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function update(Request $request, Tag $tag)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|unique:tags,name,' . $tag->id,
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        }
-
-        $tag->update(['name' => $request->name]);
 
         return response()->json($tag);
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function destroy(Tag $tag)
+    public function update(UpdateTagRequest $request, $id)
     {
-        $tag->delete();
+        $updated = $this->tagRepository->update($id, $request->validated());
 
-        return response()->json(['message' => 'Tag deleted successfully']);
+        if (!$updated) {
+            return response()->json(['message' => trans('messages.error_occurred')], 404);
+        }
+
+        return response()->json(['message' => trans('messages.tag_updated')]);
     }
 
+    public function destroy($id)
+    {
+        $deleted = $this->tagRepository->delete($id);
+
+        if (!$deleted) {
+            return response()->json(['message' => trans('messages.error_occurred')], 404);
+        }
+
+        return response()->json(['message' => trans('messages.tag_deleted')]);
+    }
 }
