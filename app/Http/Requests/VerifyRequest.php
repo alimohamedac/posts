@@ -14,7 +14,7 @@ class VerifyRequest extends FormRequest
     public function rules()
     {
         return [
-            'phone_number' => 'required|string',
+            'phone_number'      => 'required|string',
             'verification_code' => 'required|string|size:6',
         ];
     }
