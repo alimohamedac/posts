@@ -51,7 +51,6 @@ class PostController extends Controller
             'title'       => 'required|string|max:255',
             'body'        => 'required|string',
             'cover_image' => 'required|image',
-            'tags' => 'required|array',
             'pinned'      => 'required|boolean',
         ]);
 
@@ -118,7 +117,6 @@ class PostController extends Controller
             'title'       => 'required|string|max:255',
             'body'        => 'required|string',
             'cover_image' => 'sometimes|image',
-            'tags' => 'required|array',
             'pinned'      => 'required|boolean',
         ]);
 
